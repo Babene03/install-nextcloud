@@ -6,7 +6,26 @@
 # Version 2.0
 #######################################################
 #!/bin/bash
+
+###ensure lower cases
+declare -l DYNDNSNAME
+declare -l YOURSERVERNAME
+###read the current hostname
+
+###read and store the current hostname in lowercases
+clear
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo ""
+read -p "Domain-Name (nextcloud.domain.de): " YOURSERVERNAME
+echo ""
+echo "Your Domain-Name: "$YOURSERVERNAME
+echo ""
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo ""
+DYNDNSNAME=$YOURSERVERNAME
+
 ###global function to update and cleanup the environment
+
 function update_and_clean() {
 apt update
 apt upgrade -y
@@ -40,13 +59,6 @@ add-apt-repository ppa:certbot/certbot -y
 update_and_clean
 ###install letsencrypt
 apt install letsencrypt -y
-###ensure lower cases
-declare -l DYNDNSNAME
-declare -l YOURSERVERNAME
-###read the current hostname
-YOURSERVERNAME=$(hostname)
-###ask the user what would be the domain name to request the certificate for
-read -p "Your domain: " DYNDNSNAME
 ###request the certificate for the entered domain name
 letsencrypt certonly -a webroot --webroot-path=/var/www/letsencrypt --rsa-key-size 4096 -d $DYNDNSNAME
 ###in case of any errors
