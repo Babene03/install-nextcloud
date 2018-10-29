@@ -9,6 +9,25 @@
 ################################################
 # Ubuntu 18.04 LTS AMD64 - Nextcloud 14
 ################################################
+###read and store the current hostname in lowercases
+clear
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo ""
+read -p "Domain-Name (nextcloud.domain.de): " YOURSERVERNAME
+echo ""
+echo "Your Domain-Name: "$YOURSERVERNAME
+echo ""
+read -p "Nextcloud Data Path (/nextcloud-data): " nc_data
+echo ""
+echo "Your Nextcloud Data Path: "$nc_data
+echo ""
+read -p "Max Upload Filesize (100G):" max_filesize
+echo ""
+echo "Your max Upload Filesize: "$max_filesize
+echo ""
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo ""
+
 #!/bin/bash
 ###global function to update and cleanup the environment
 function update_and_clean() {
@@ -136,9 +155,9 @@ EOF
 ###restart NGINX
 service nginx restart
 ###create folders
-mkdir -p /var/nc_data /var/www/letsencrypt /usr/local/tmp/cache /usr/local/tmp/sessions /usr/local/tmp/apc /upload_tmp
+mkdir -p $nc_data /var/www/letsencrypt /usr/local/tmp/cache /usr/local/tmp/sessions /usr/local/tmp/apc /upload_tmp
 ###apply permissions
-chown -R www-data:www-data /upload_tmp /var/nc_data /var/www
+chown -R www-data:www-data /upload_tmp $nc_data /var/www
 chown -R www-data:root /usr/local/tmp/sessions /usr/local/tmp/cache /usr/local/tmp/apc
 ###install PHP
 apt install php7.2-fpm php7.2-gd php7.2-mysql php7.2-curl php7.2-xml php7.2-zip php7.2-intl php7.2-mbstring php7.2-json php7.2-bz2 php7.2-ldap php-apcu imagemagick php-imagick -y
@@ -160,9 +179,9 @@ sed -i "s/;pm.max_requests = 500/pm.max_requests = 500/" /etc/php/7.2/fpm/pool.d
 sed -i "s/output_buffering =.*/output_buffering = 'Off'/" /etc/php/7.2/cli/php.ini
 sed -i "s/max_execution_time =.*/max_execution_time = 1800/" /etc/php/7.2/cli/php.ini
 sed -i "s/max_input_time =.*/max_input_time = 3600/" /etc/php/7.2/cli/php.ini
-sed -i "s/post_max_size =.*/post_max_size = 10240M/" /etc/php/7.2/cli/php.ini
+sed -i "s/post_max_size =.*/post_max_size = $max_filesize/" /etc/php/7.2/cli/php.ini
 sed -i "s/;upload_tmp_dir =.*/upload_tmp_dir = \/upload_tmp/" /etc/php/7.2/cli/php.ini
-sed -i "s/upload_max_filesize =.*/upload_max_filesize = 10240M/" /etc/php/7.2/cli/php.ini
+sed -i "s/upload_max_filesize =.*/upload_max_filesize = $max_filesize/" /etc/php/7.2/cli/php.ini
 sed -i "s/max_file_uploads =.*/max_file_uploads = 100/" /etc/php/7.2/cli/php.ini
 sed -i "s/;date.timezone.*/date.timezone = Europe\/\Berlin/" /etc/php/7.2/cli/php.ini
 sed -i "s/;session.cookie_secure.*/session.cookie_secure = True/" /etc/php/7.2/cli/php.ini
@@ -172,9 +191,9 @@ sed -i "s/memory_limit = 128M/memory_limit = 512M/" /etc/php/7.2/fpm/php.ini
 sed -i "s/output_buffering =.*/output_buffering = 'Off'/" /etc/php/7.2/fpm/php.ini
 sed -i "s/max_execution_time =.*/max_execution_time = 1800/" /etc/php/7.2/fpm/php.ini
 sed -i "s/max_input_time =.*/max_input_time = 3600/" /etc/php/7.2/fpm/php.ini
-sed -i "s/post_max_size =.*/post_max_size = 10240M/" /etc/php/7.2/fpm/php.ini
+sed -i "s/post_max_size =.*/post_max_size = $max_filesize/" /etc/php/7.2/fpm/php.ini
 sed -i "s/;upload_tmp_dir =.*/upload_tmp_dir = \/upload_tmp/" /etc/php/7.2/fpm/php.ini
-sed -i "s/upload_max_filesize =.*/upload_max_filesize = 10240M/" /etc/php/7.2/fpm/php.ini
+sed -i "s/upload_max_filesize =.*/upload_max_filesize = $max_filesize/" /etc/php/7.2/fpm/php.ini
 sed -i "s/max_file_uploads =.*/max_file_uploads = 100/" /etc/php/7.2/fpm/php.ini
 sed -i "s/;date.timezone.*/date.timezone = Europe\/\Berlin/" /etc/php/7.2/fpm/php.ini
 sed -i "s/;session.cookie_secure.*/session.cookie_secure = True/" /etc/php/7.2/fpm/php.ini
@@ -359,7 +378,7 @@ mv /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.bak
 touch /etc/nginx/conf.d/default.conf
 cat <<EOF >/etc/nginx/conf.d/nextcloud.conf
 server {
-server_name YOUR.DEDYN.IO;
+server_name $YOURSERVERNAME;
 listen 80 default_server;
 location ^~ /.well-known/acme-challenge {
 proxy_pass http://127.0.0.1:81;
@@ -370,7 +389,7 @@ return 301 https://\$host\$request_uri;
 }
 }
 server {
-server_name YOUR.DEDYN.IO;
+server_name $YOURSERVERNAME;
 listen 443 ssl http2 default_server;
 root /var/www/nextcloud/;
 access_log /var/log/nginx/nextcloud.access.log main;
@@ -386,7 +405,7 @@ return 301 \$scheme://\$host/remote.php/dav;
 location = /.well-known/caldav {
 return 301 \$scheme://\$host/remote.php/dav;
 }
-client_max_body_size 10240M;
+client_max_body_size $max_filesize;
 location / {
 rewrite ^ /index.php\$uri;
 }
@@ -514,7 +533,7 @@ fastcgi_cache_valid any 1h;
 fastcgi_cache_methods GET HEAD;
 EOF
 sed -i s/\#\include/\include/g /etc/nginx/nginx.conf
-sed -i "s/server_name YOUR.DEDYN.IO;/server_name $(hostname);/" /etc/nginx/conf.d/nextcloud.conf
+sed -i "s/server_name YOUR.DEDYN.IO;/server_name $YOURSERVERNAME;/" /etc/nginx/ssl.conf
 ###create Nextclouds cronjob
 (crontab -u www-data -l ; echo "*/15 * * * * php -f /var/www/nextcloud/cron.php > /dev/null 2>&1") | crontab -u www-data -
 ###restart NGINX
@@ -546,10 +565,8 @@ echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 echo ""
 echo "Your NEXTCLOUD will now be installed silently - please be patient ..."
 echo ""
-sudo -u www-data php /var/www/nextcloud/occ maintenance:install --database "mysql" --database-name "$NEXTCLOUDDBNAME"  --database-user "$NEXTCLOUDDBUSER" --database-pass "$NEXTCLOUDDBPASSWORD" --admin-user "$NEXTCLOUDADMINUSER" --admin-pass "$NEXTCLOUDADMINUSERPASSWORD" --data-dir "/var/nc_data"
+sudo -u www-data php /var/www/nextcloud/occ maintenance:install --database "mysql" --database-name "$NEXTCLOUDDBNAME"  --database-user "$NEXTCLOUDDBUSER" --database-pass "$NEXTCLOUDDBPASSWORD" --admin-user "$NEXTCLOUDADMINUSER" --admin-pass "$NEXTCLOUDADMINUSERPASSWORD" --data-dir $nc_data
 declare -l YOURSERVERNAME
-###read and store the current hostname in lowercases
-YOURSERVERNAME=$(hostname)
 sudo -u www-data cp /var/www/nextcloud/config/config.php /var/www/nextcloud/config/config.php.bak
 sudo -u www-data php /var/www/nextcloud/occ config:system:set trusted_domains 0 --value=$YOURSERVERNAME
 sudo -u www-data php /var/www/nextcloud/occ config:system:set overwrite.cli.url --value=https://$YOURSERVERNAME
@@ -559,8 +576,8 @@ echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ###backup of the effected file .user.ini
 cp /var/www/nextcloud/.user.ini /usr/local/src/.user.ini.bak
 ###apply Nextcloud optimizations
-sudo -u www-data sed -i "s/upload_max_filesize=.*/upload_max_filesize=10240M/" /var/www/nextcloud/.user.ini
-sudo -u www-data sed -i "s/post_max_size=.*/post_max_size=10240M/" /var/www/nextcloud/.user.ini
+sudo -u www-data sed -i "s/upload_max_filesize=.*/upload_max_filesize=$max_filesize/" /var/www/nextcloud/.user.ini
+sudo -u www-data sed -i "s/post_max_size=.*/post_max_size=$max_filesize/" /var/www/nextcloud/.user.ini
 sudo -u www-data sed -i "s/output_buffering=.*/output_buffering='Off'/" /var/www/nextcloud/.user.ini
 sudo -u www-data php /var/www/nextcloud/occ background:cron
 ###apply optimizations to Nextclouds global config.php
@@ -639,7 +656,7 @@ filter = nextcloud
 maxretry = 3
 bantime = 36000
 findtime = 36000
-logpath = /var/nc_data/nextcloud.log
+logpath = $nc_data/nextcloud.log
 [nginx-http-auth]
 enabled = true
 EOF
