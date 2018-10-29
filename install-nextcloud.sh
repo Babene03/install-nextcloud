@@ -21,7 +21,7 @@ read -p "Nextcloud Data Path (/nextcloud-data): " nc_data
 echo ""
 echo "Your Nextcloud Data Path: "$nc_data
 echo ""
-read -p "Max Upload Filesize (100G):" max_filesize
+read -p "Max Upload Filesize (100G): " max_filesize
 echo ""
 echo "Your max Upload Filesize: "$max_filesize
 echo ""
