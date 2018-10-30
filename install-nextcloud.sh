@@ -177,8 +177,8 @@ sed -i "s/pm.min_spare_servers = .*/pm.min_spare_servers = 10/" /etc/php/7.2/fpm
 sed -i "s/pm.max_spare_servers = .*/pm.max_spare_servers = 20/" /etc/php/7.2/fpm/pool.d/www.conf
 sed -i "s/;pm.max_requests = 500/pm.max_requests = 500/" /etc/php/7.2/fpm/pool.d/www.conf
 sed -i "s/output_buffering =.*/output_buffering = 'Off'/" /etc/php/7.2/cli/php.ini
-sed -i "s/max_execution_time =.*/max_execution_time = 1800/" /etc/php/7.2/cli/php.ini
-sed -i "s/max_input_time =.*/max_input_time = 3600/" /etc/php/7.2/cli/php.ini
+sed -i "s/max_execution_time =.*/max_execution_time = 7200/" /etc/php/7.2/cli/php.ini
+sed -i "s/max_input_time =.*/max_input_time = 7200/" /etc/php/7.2/cli/php.ini
 sed -i "s/post_max_size =.*/post_max_size = $max_filesize/" /etc/php/7.2/cli/php.ini
 sed -i "s/;upload_tmp_dir =.*/upload_tmp_dir = \/upload_tmp/" /etc/php/7.2/cli/php.ini
 sed -i "s/upload_max_filesize =.*/upload_max_filesize = $max_filesize/" /etc/php/7.2/cli/php.ini
@@ -187,10 +187,10 @@ sed -i "s/;date.timezone.*/date.timezone = Europe\/\Berlin/" /etc/php/7.2/cli/ph
 sed -i "s/;session.cookie_secure.*/session.cookie_secure = True/" /etc/php/7.2/cli/php.ini
 sed -i "s/;session.save_path =.*/session.save_path = \"N;700;\/usr\/local\/tmp\/sessions\"/" /etc/php/7.2/cli/php.ini
 sed -i '$aapc.enable_cli = 1' /etc/php/7.2/cli/php.ini
-sed -i "s/memory_limit = 128M/memory_limit = 512M/" /etc/php/7.2/fpm/php.ini
+sed -i "s/memory_limit = 128M/memory_limit = 1024M/" /etc/php/7.2/fpm/php.ini
 sed -i "s/output_buffering =.*/output_buffering = 'Off'/" /etc/php/7.2/fpm/php.ini
-sed -i "s/max_execution_time =.*/max_execution_time = 1800/" /etc/php/7.2/fpm/php.ini
-sed -i "s/max_input_time =.*/max_input_time = 3600/" /etc/php/7.2/fpm/php.ini
+sed -i "s/max_execution_time =.*/max_execution_time = 7200/" /etc/php/7.2/fpm/php.ini
+sed -i "s/max_input_time =.*/max_input_time = 7200/" /etc/php/7.2/fpm/php.ini
 sed -i "s/post_max_size =.*/post_max_size = $max_filesize/" /etc/php/7.2/fpm/php.ini
 sed -i "s/;upload_tmp_dir =.*/upload_tmp_dir = \/upload_tmp/" /etc/php/7.2/fpm/php.ini
 sed -i "s/upload_max_filesize =.*/upload_max_filesize = $max_filesize/" /etc/php/7.2/fpm/php.ini
@@ -219,7 +219,7 @@ sed -i '$aapc.user_ttl=7200' /etc/php/7.2/fpm/php.ini
 sed -i '$aapc.gc_ttl=3600' /etc/php/7.2/fpm/php.ini
 sed -i '$aapc.num_files_hint=1024' /etc/php/7.2/fpm/php.ini
 sed -i '$aapc.enable_cli=0' /etc/php/7.2/fpm/php.ini
-sed -i '$aapc.max_file_size=5M' /etc/php/7.2/fpm/php.ini
+sed -i '$aapc.max_file_size=500M' /etc/php/7.2/fpm/php.ini
 sed -i '$aapc.cache_by_default=1' /etc/php/7.2/fpm/php.ini
 sed -i '$aapc.use_request_time=1' /etc/php/7.2/fpm/php.ini
 sed -i '$aapc.slam_defense=0' /etc/php/7.2/fpm/php.ini
@@ -239,9 +239,9 @@ sed -i "s/09,39.*/# &/" /etc/cron.d/php
 (crontab -l ; echo "09,39 * * * * /usr/lib/php/sessionclean 2>&1") | crontab -u root -
 sed -i '$atmpfs /tmp tmpfs defaults,noatime,nosuid,nodev,noexec,mode=1777 0 0' /etc/fstab
 sed -i '$atmpfs /var/tmp tmpfs defaults,noatime,nosuid,nodev,noexec,mode=1777 0 0' /etc/fstab
-sed -i '$atmpfs /usr/local/tmp/apc tmpfs defaults,uid=33,size=300M,noatime,nosuid,nodev,noexec,mode=1777 0 0' /etc/fstab
-sed -i '$atmpfs /usr/local/tmp/cache tmpfs defaults,uid=33,size=300M,noatime,nosuid,nodev,noexec,mode=1777 0 0' /etc/fstab
-sed -i '$atmpfs /usr/local/tmp/sessions tmpfs defaults,uid=33,size=300M,noatime,nosuid,nodev,noexec,mode=1777 0 0' /etc/fstab
+sed -i '$atmpfs /usr/local/tmp/apc tmpfs defaults,uid=33,size=1G,noatime,nosuid,nodev,noexec,mode=1777 0 0' /etc/fstab
+sed -i '$atmpfs /usr/local/tmp/cache tmpfs defaults,uid=33,size=1G,noatime,nosuid,nodev,noexec,mode=1777 0 0' /etc/fstab
+sed -i '$atmpfs /usr/local/tmp/sessions tmpfs defaults,uid=33,size=1G,noatime,nosuid,nodev,noexec,mode=1777 0 0' /etc/fstab
 ###make use of RAMDISK
 mount -a
 ###restart PHP and NGINX
@@ -579,6 +579,7 @@ cp /var/www/nextcloud/.user.ini /usr/local/src/.user.ini.bak
 sudo -u www-data sed -i "s/upload_max_filesize=.*/upload_max_filesize=$max_filesize/" /var/www/nextcloud/.user.ini
 sudo -u www-data sed -i "s/post_max_size=.*/post_max_size=$max_filesize/" /var/www/nextcloud/.user.ini
 sudo -u www-data sed -i "s/output_buffering=.*/output_buffering='Off'/" /var/www/nextcloud/.user.ini
+sudo -u www-data sed -i "s/memory_limit=.*/memory_limit=1G/" /var/www/nextcloud/.user.ini
 sudo -u www-data php /var/www/nextcloud/occ background:cron
 ###apply optimizations to Nextclouds global config.php
 sed -i '/);/d' /var/www/nextcloud/config/config.php
@@ -590,8 +591,14 @@ array (
 0 => '.htaccess',
 1 => 'Thumbs.db',
 2 => 'thumbs.db',
+3 => 'autorun.inf',
+4 => 'autorun.ico',
 ),
 'cron_log' => true,
+'default_language' => 'de',
+'default_locale' => 'de_DE',
+'remember_login_cookie_lifetime' => 60*60*24*15,
+'session_lifetime' => 60 * 60 * 24,
 'enable_previews' => true,
 'enabledPreviewProviders' =>
 array (
@@ -604,7 +611,17 @@ array (
 6 => 'OC\\Preview\\PDF',
 7 => 'OC\\Preview\\MP3',
 8 => 'OC\\Preview\\TXT',
-9 => 'OC\\Preview\\MarkDown',
+9 => 'OC\\Preview\\Illustrator',
+10=> 'OC\\Preview\\MSOffice2003',
+11=> 'OC\\Preview\\MSOffice2007',
+12=> 'OC\\Preview\\MSOfficeDoc',
+13=> 'OC\\Preview\\OpenDocument',
+14=> 'OC\\Preview\\Photoshop',
+15=> 'OC\\Preview\\Postscript',
+16=> 'OC\\Preview\\StarOffice',
+17=> 'OC\\Preview\\SVG',
+18=> 'OC\\Preview\\TIFF',
+19=> 'OC\\Preview\\Font',
 ),
 'filesystem_check_changes' => 0,
 'filelocking.enabled' => 'true',
@@ -628,6 +645,13 @@ array (
 'share_folder' => '/Shares',
 'skeletondirectory' => '',
 'trashbin_retention_obligation' => 'auto, 7',
+'versions_retention_obligation' => 'auto, 180',
+'updatechecker' => true,
+'updater.release.channel' => 'stable',
+'log_rotate_size' => 100 * 1024 * 1024,
+'filelocking.enabled' => false,
+'filelocking.ttl' => 60*5,
+'activity_expire_days' => 30,
 );
 EOF
 ###remove leading whitespaces
