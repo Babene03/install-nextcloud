@@ -648,7 +648,7 @@ array (
 'updatechecker' => true,
 'updater.release.channel' => 'stable',
 'log_rotate_size' => 100 * 1024 * 1024,
-'filelocking.enabled' => false,
+'filelocking.enabled' => true,
 'filelocking.ttl' => 60*5,
 'activity_expire_days' => 30,
 );
